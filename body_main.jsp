@@ -23,7 +23,7 @@
 			%>
 			<div class="col-md-4">
                     <div class="card bg-dark text-white">
-                        <img src="image/product/<%=product.getProductId()%>.jpg" class="card-img" alt="...">
+                        <img src="image/product/<%=product.getFilename()%>" class="card-img" alt="...">
                         <div class="main-img-overlay">
                         <h5 class="main-title">사료, 간식, 장난감 샘플</h5>
                         <p class="main-text">출처 : 구글 검색</p>

@@ -5,7 +5,6 @@
 <%@ page buffer="1kb" autoFlush="true"%>
 <%@ page import="example.*" %> <%-- ppt에는 footer 헤더에 넣으라고 되어있음 --%>
     
-<%@ page errorPage = "exception/product_not_found.jsp" %> <%-- 6주차 예외처리 다시 확인--%>
 <%@ page errorPage = "exception/main_server_downtime.jsp" %> <%-- 6주차 예외처리 다시 확인--%>
     
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
@@ -18,10 +17,10 @@
 <title>냥이 공간</title>
 </head>
 <body>	<%-- JSP 주석 처리 --%>  <%-- 부트스트랩 --%>
-    <%@ include file="top_banner.jsp" %>
-	<%@ include file="top_menu.jsp" %>
-	<%@ include file="body_main.jsp" %>	
-    <%@ include file="footer.jsp" %>
+    <%@ include file="top_banner_ad.jsp" %>
+	<%@ include file="top_menu_ad.jsp" %>
+	<%@ include file="body_main_ad.jsp" %>	
+    <%@ include file="footer_ad.jsp" %>
     
 현재 페이지 버퍼 용량 : <%= out.getBufferSize() %> <br>
 남은 페이지 버퍼 용량 : <%= out.getRemaining() %>
