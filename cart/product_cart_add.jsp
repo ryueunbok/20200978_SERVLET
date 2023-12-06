@@ -17,16 +17,7 @@
 		response.sendRedirect("../exception/product_not_found.jsp");
 	}
 
-	ArrayList<Product> goodsList = dao.getAllProducts();
-	Product goods = new Product();
-	for (int i = 0; i < goodsList.size(); i++) {
-		goods = goodsList.get(i);
-		if (goods.getProductId().equals(id)) { 			
-			break;
-		}
-	}
-
-    ArrayList<Product> list = (ArrayList<Product>) session.getAttribute("cartlist");
+	ArrayList<Product> list = (ArrayList<Product>) session.getAttribute("cartlist");
 	if (list == null) { 
 		list = new ArrayList<Product>();
 		session.setAttribute("cartlist", list); // 세션 키, 값 설정
@@ -50,3 +41,4 @@
 
 	response.sendRedirect("product_cart.jsp?id=" + id); // 장바구니 화면 페이지로 이동
 %>
+

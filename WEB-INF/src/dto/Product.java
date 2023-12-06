@@ -95,11 +95,11 @@ public class Product implements Serializable { // 인터페이스 선언
     }
     
     public int getQuantity() {
-	return quantity;
+	    return quantity;
     }
     
     public void setQuantity(int quantity) {
-	this.quantity = quantity;
+	    this.quantity = quantity;
     }
     
     public String getFilename() { // 파일 이름 리턴

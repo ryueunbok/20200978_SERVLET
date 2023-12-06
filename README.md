@@ -1109,7 +1109,7 @@ admin폴더 안 product_detail.jsp파일에 로그아웃 버튼 추가
 해결 못함
 
 
-=================================================<10주차>=====================================================
+=================================================<10주차>(코딩 완료했으나 구현 안됨)=====================================================
 Product.java파일을 수정한다.
 
 private int quantity;	//장바구니에 담은 개수
@@ -1333,5 +1333,479 @@ cart폴더안에 product_cart_remove_all.jsp파일(장바구니 삭제 페이지
 %>
 
 
-===================================================================9주차 연습문제==================================================================================
+===================================================================10주차 연습문제==================================================================================
+footer.jsp에 직접 클래스 연동 추가한다.
+
+<%@ page import="java.util.Date"%>
+
+cart 용 image 폴더와 파일을 새로 생성, 또는 경로를 직접 수정한다.
+cart폴더에 imafe파일 복사한다.
+
+=================================================<11주차>(코딩 완료했으나 구현 안됨)=====================================================
+
+============================================================주문 처리 페이지=====================================================
+(기존 장바구니 페이지)product_cart.jsp파일을 수정한다.
+
+<td align="right"><a href="../order/order_info.jsp?cartId=<%= cartId %>" class="btn btn-success">주문하기</a></td>
+
+==============================================================================================================================
+order폴더를 만들고 order_info.jsp파일을 생성한 후 코드 입력한다.
+
+<%@ page contentType="text/html; charset=utf-8"%>
+
+<html>
+<head>
+부트스트랩 링크
+<title>배송 정보</title>
+</head>
+<body>
+	<jsp:include page="../top_menu.jsp" />
+	<div class="jumbotron">
+	   <div class="container">
+		<h1 class="display-3">배송 정보</h1>
+	   </div>
+	</div>
+	<div class="container">
+	   <form action="order_info_process.jsp" class="form-horizontal" method="post">
+	     <input type="hidden" name="cartId" value="<%=request.getParameter("cartId")%>" />
+	     <div class="form-group row">
+	       <label class="col-sm-2">성명</label>
+	          <div class="col-sm-3">
+	      	<input name="name" type="text" class="form-control" />
+	          </div>
+	    </div>
+
+<div class="form-group row">
+	<label class="col-sm-2">배송일</label>
+	<div class="col-sm-3">
+		<input name="shippingDate" type="text" class="form-control" />(yyyy/mm/dd)
+	</div>
+	  </div>
+	 <div class="form-group row">
+	   <label class="col-sm-2">국가명</label>
+	     <div class="col-sm-3">
+		<input name="country" type="text" class="form-control" />
+	    </div>
+	 </div>
+	<div class="form-group row">
+	   <label class="col-sm-2">우편번호</label>
+	     <div class="col-sm-3">
+	 	<input name="zipCode" type="text" class="form-control" />
+	    </div>
+	</div>
+
+    <div class="form-group row">
+	   <label class="col-sm-2">주소</label>
+	     <div class="col-sm-5">
+		<input name="addressName" type="text" class="form-control" />
+	     </div>
+	</div>
+	<div class="form-group row">
+	   <div class="col-sm-offset-2 col-sm-10 ">
+	     <a href="../cart/product_cart.jsp?cartId=<%=request.getParameter("cartId")%>" class="btn btn-secondary" role="button"> 이전 </a> 
+		<input type="submit" class="btn btn-primary" value="등록" />
+		<a href=“order_cancelled.jsp" class="btn btn-secondary" role="button"> 취소 </a>
+	   </div>
+	</div>
+  </form>
+  </div>
+</body>
+</html>
+
+=======================================================================================================================================================
+order폴더안에 order_info_process.jsp파일을 생성한 후 코드 입력한다.
+
+<%@ page contentType="text/html; charset=utf-8"%>
+<%@ page import="java.net.URLEncoder"%>
+<%
+	request.setCharacterEncoding("UTF-8"); // 표준 인코딩 설정 : 한글 깨짐 방지
+
+	Cookie cartId = new Cookie("Shipping_cartId", URLEncoder.encode(request.getParameter("cartId"), "utf-8")); // 표준 코드 형태로 변환
+	Cookie name = new Cookie("Shipping_name", URLEncoder.encode(request.getParameter("name"), "utf-8"));
+	Cookie shippingDate = new Cookie("Shipping_shippingDate", URLEncoder.encode(request.getParameter("shippingDate"), "utf-8"));
+	Cookie country = new Cookie("Shipping_country",	URLEncoder.encode(request.getParameter("country"), "utf-8"));
+	Cookie zipCode = new Cookie("Shipping_zipCode",	URLEncoder.encode(request.getParameter("zipCode"), "utf-8"));
+	Cookie addressName = new Cookie("Shipping_addressName", URLEncoder.encode(request.getParameter("addressName"), "utf-8"));
+
+	cartId.setMaxAge(24 * 60 * 60); // 초 단위
+	name.setMaxAge(24 * 60 * 60);
+	zipCode.setMaxAge( 24 * 60 * 60);
+	country.setMaxAge(24 * 60 * 60);
+	addressName.setMaxAge(24 * 60 * 60);
+
+	response.addCookie(cartId); // 생성된 쿠키 추가
+	response.addCookie(name);
+	response.addCookie(shippingDate);
+	response.addCookie(country);
+	response.addCookie(zipCode);
+	response.addCookie(addressName);
+
+	response.sendRedirect("order_confirm.jsp");
+%>
+
+======================================================================================================================================================
+order폴더안에 order_confirm.jsp 파일을 생성한 후 코드 입력한다.
+추가된 쿠키 정보를 배열로부터 읽음(디코딩)
+
+<%@ page contentType="text/html; charset=utf-8"%>
+<%@ page import="java.util.ArrayList"%>
+<%@ page import="java.net.URLDecoder"%>
+<%@ page import="dto.Product"%>
+<%@ page import="dao.ProductRepository"%>
+
+<%
+	request.setCharacterEncoding("UTF-8");
+	String cartId = session.getId(); // 세션 id 얻기
+
+	String shipping_cartId = "";
+	String shipping_name = "";
+	String shipping_shippingDate = "";
+	String shipping_country = "";
+	String shipping_zipCode = "";
+	String shipping_addressName = "";
+	
+	Cookie[] cookies = request.getCookies(); // 쿠키 배열로부터 정보 얻기
+
+	if (cookies != null) {
+		for (int i = 0; i < cookies.length; i++) { // 길이만큼 쿠키 읽기
+			Cookie thisCookie = cookies[i];
+			String n = thisCookie.getName();
+			if (n.equals("Shipping_cartId"))
+				shipping_cartId = URLDecoder.decode((thisCookie.getValue()), "utf-8"); // 원본 형태 문자열로 반환
+			if (n.equals("Shipping_name"))
+				shipping_name = URLDecoder.decode((thisCookie.getValue()), "utf-8");
+			if (n.equals("Shipping_shippingDate"))
+				shipping_shippingDate = URLDecoder.decode((thisCookie.getValue()), "utf-8");
+			if (n.equals("Shipping_country"))
+				shipping_country = URLDecoder.decode((thisCookie.getValue()), "utf-8");
+			if (n.equals("Shipping_zipCode"))
+				shipping_zipCode = URLDecoder.decode((thisCookie.getValue()), "utf-8");
+			if (n.equals("Shipping_addressName"))
+				shipping_addressName = URLDecoder.decode((thisCookie.getValue()), "utf-8");
+		}
+	}
+%>
+
+<html>
+<head>
+부트스트랩 링크
+<title>주문 정보</title>
+</head>
+<body>
+	<jsp:include page="../top_menu.jsp" />
+	<div class="jumbotron">
+	   <div class="container">
+		<h1 class="display-3">주문 정보</h1>
+	   </div>
+	</div>
+
+	<div class="container col-8 alert alert-info">
+	   <div class="text-center ">
+		<h1>영수증</h1>
+	   </div>
+	<div class="row justify-content-between">
+		<div class="col-4" align="left">
+			<strong>배송 주소</strong> <br> 성명 : <% out.println(shipping_name); %>	<br> 
+			우편번호 : <% out.println(shipping_zipCode);%><br> 
+			주소 : <% out.println(shipping_addressName);%>(<% out.println(shipping_country);%>) <br>
+		</div>
+		<div class="col-4" align="right">
+			<p>	<em>배송일: <% out.println(shipping_shippingDate);%></em>
+		</div>
+	</div>
+
+	<div>
+		<table class="table table-hover">			
+		<tr>
+			<th class="text-center">도서</th>
+			<th class="text-center">#</th>
+			<th class="text-center">가격</th>
+			<th class="text-center">소계</th>
+		</tr>
+		<%
+			int sum = 0;
+			ArrayList<Product> cartList = (ArrayList<Product>) session.getAttribute("cartlist");
+			if (cartList == null)
+				cartList = new ArrayList<Product>();
+			for (int i = 0; i < cartList.size(); i++) { // 상품리스트 하나씩 출력하기
+				Product product = cartList.get(i);
+				int total = product.getUnitPrice() * product.getQuantity();
+				sum = sum + total;
+		%>
+
+    <tr>
+			<td class="text-center"><em><%=product.getPname()%> </em></td>
+			<td class="text-center"><%=product.getQuantity()%></td>
+			<td class="text-center"><%=product.getUnitPrice()%>원</td>
+			<td class="text-center"><%=total%>원</td>
+		</tr>
+		<%
+			}
+		%>
+		<tr>
+			<td> </td>
+			<td> </td>
+			<td class="text-right">	<strong>총액: </strong></td>
+			<td class="text-center text-danger"><strong><%=sum%> </strong></td>
+		</tr>
+		</table>
+		
+			<a href="order_info.jsp?cartId=<%=shipping_cartId%>"class="btn btn-secondary" role="button"> 이전 </a>
+			<a href="order_end.jsp"  class="btn btn-success" role="button"> 주문 완료 </a>
+			<a href="order_cancelled.jsp" class="btn btn-secondary“ role="button"> 취소 </a>			
+	   </div>
+	</div>	
+</body>
+</html>
+
+===================================================================================================================================
+order폴더안에 order_end.jsp 파일을 생성한 후 코드 입력한다.
+
+<%@ page contentType="text/html; charset=utf-8"%>
+<%@ page import="java.net.URLDecoder"%>
+<html>
+<head>
+부트스트랩 링크
+<title>주문 완료</title>
+</head>
+<body>
+	<%
+		String shipping_cartId = "";
+		String shipping_name = "";
+		String shipping_shippingDate = "";
+		String shipping_country = "";
+		String shipping_zipCode = "";
+		String shipping_addressName = "";		
+
+		Cookie[] cookies = request.getCookies();
+
+		if (cookies != null) {
+			for (int i = 0; i < cookies.length; i++) {
+				Cookie thisCookie = cookies[i];
+				String n = thisCookie.getName();
+				if (n.equals("Shipping_cartId"))
+					shipping_cartId = URLDecoder.decode((thisCookie.getValue()), "utf-8");
+				if (n.equals("Shipping_shippingDate"))
+					shipping_shippingDate = URLDecoder.decode((thisCookie.getValue()), "utf-8");
+			}
+		}
+	%>
+
+    <jsp:include page="../top_menu.jsp" />
+	<div class="jumbotron">
+	   <div class="container">
+		<h1 class="display-3">주문 완료</h1>
+	   </div>
+	</div>
+	<div class="container">
+	   <h2 class="alert alert-danger">주문해주셔서 감사합니다.</h2>
+	   <p>주문은 <% out.println(shipping_shippingDate); %>에 배송될 예정입니다! !	
+	   <p> 주문번호 : <% out.println(shipping_cartId); %>		
+	</div>
+	<div class="container">
+	   <p><a href="../index.jsp" class="btn btn-secondary"> &laquo; 상품 목록</a>		
+	</div>
+</body>
+</html>
+
+<%
+	session.invalidate();
+
+	for (int i = 0; i < cookies.length; i++) {
+		Cookie thisCookie = cookies[i];
+		String n = thisCookie.getName();
+		if (n.equals("Shipping_cartId"))
+			thisCookie.setMaxAge(0);
+		if (n.equals("Shipping_name"))
+			thisCookie.setMaxAge(0);
+		if (n.equals("Shipping_shippingDate"))
+			thisCookie.setMaxAge(0);
+		if (n.equals("Shipping_country"))
+			thisCookie.setMaxAge(0);
+		if (n.equals("Shipping_zipCode"))
+			thisCookie.setMaxAge(0);
+		if (n.equals("Shipping_addressName"))
+			thisCookie.setMaxAge(0);
+		
+		response.addCookie(thisCookie);
+	}
+%>
+
+=============================================================================================================================
+order폴더안에 order_cancelled.jsp파일을 생성한 후 코드 입력한다.
+
+<%@ page contentType="text/html; charset=utf-8"%>
+<html>
+<head>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+<title>주문 취소다냥</title>
+</head>
+<body>
+	<jsp:include page="../top_menu.jsp" />
+	<div class="jumbotron">
+		<div class="container">
+			<h1 class="display-3">주문 취소</h1>
+		</div>
+	</div>
+	<div class="container">
+		<h2 class="alert alert-danger">주문이 취소되었다냥</h2>
+	</div>
+	<div class="container">
+		<p><a href="../index.jsp" class="btn btn-secondary"> &laquo; 상품 목록</a>		
+	</div>	
+</body>
+</html>
+
+
+===================================================================11주차 연습문제==================================================================================
+해결 못함
+
+
+=================================================<12주차>=====================================================
+새 컨테이너 만들고 MYSQL체크 꼭 하기
+
+터미널에서
+sudo apt-get update => 최고 권한 주기
+sudo apt-cache search mysql-server
+apt-get install libmysql-java => 설치
+cd /usr/share/java/ => 결로 이동
+ls -al => 파일 목록 확인
+cp mysql-connector-java-5.1.28.jar /goormService/tomcat7/lib/
+cd /goormService/tomcat7/lib/
+
+탐캣 재시작
+============================================================================================================================
+보안 기본 설정
+
+Mysql 서비스 시작하기 => (구름 ide 접속 때 마다)
+service mysql start
+
+현재 서버의 mysql 버전 확인
+mysql --version (버전 확인)
+
+mysql 실행 파일 경로 이동
+cd /usr/bin/
+ls mysql_secure_installation
+
+보안 설정 실행
+mysql_secure_installation
+
+패스워드(동일하게 2번 입력)
+123123 (화면에 보이지 않음)
+
+설정 완료 후 db 접속 테스트
+mysql –uroot –p
+패스워드 : 123123
+============================================================================================================================
+테이블 생성 및 데이터 삽입
+
+show databases;
+create database ggouppang_학번;
+use ggouppang_학번
+
+CREATE TABLE IF NOT EXISTS product(
+    p_id VARCHAR(10) NOT NULL,
+    p_name VARCHAR(20),
+    p_unitPrice  INTEGER,
+    p_description TEXT,
+    p_category VARCHAR(20),
+    p_manufacturer VARCHAR(20),
+    p_unitsInStock LONG,
+    p_condition VARCHAR(20),
+    p_fileName  VARCHAR(20),
+    PRIMARY KEY (p_id)
+)default CHARSET=utf8;
+desc product;
+
+desc product; => 테이블 확인
+
+drop table product; => 테이블 삭제
+
+show tables; => DB속 테이블 전부 조회
+
+Select * from product; =>테이블 조회
+============================================================================================================================
+conn_test.jsp파일을 생성한 후 코드를 작성한다.
+
+<%@ page contentType="text/html; charset=utf-8"%>
+<%@ page import = "java.sql.*" %> 
+<html> 
+<head>
+    <title>mysql 데이터베이스 접속 테스트</title>
+</head>
+<body>
+<%
+	Statement stm = null;
+	ResultSet rs = null;
+    Boolean conn_state = false;
+
+	Class.forName("com.mysql.jdbc.Driver");
+	String myUrl = "jdbc:mysql://localhost/데이터베이스 이름";
+	Connection conn = DriverManager.getConnection(myUrl, "root", “패스워드");
+	try {
+        	stm = conn.createStatement();
+            conn_state = true;
+        	if(stm.execute("select * from product")) {
+                	rs = stm.getResultSet();
+        }
+
+     while(rs.next()) {
+                out.println(rs.getString("p_id"));
+                out.println(rs.getString("p_name"));
+                out.println(rs.getString("p_unitPrice"));
+                out.println(rs.getString("p_description"));
+                out.println(rs.getString("p_manufacturer"));
+                out.write("<br><br>");
+        }
+        rs.close();
+        stm.close();
+}
+catch(Exception e) {
+        out.println("rs.next() ERROR");
+}
+conn.close();
+%> 
+
+<%
+	if(conn_state == true){
+%>
+	데이터베이스에 연결되었습니다.
+<%
+    }else{
+%>
+	연결에 실패하였습니다.
+<% 
+    } 
+%>
+</body>
+</html>
+
+
+https://jsp-test-내그룸ide주소/conn_test.jsp => 내 사이트에서 확인학
+
+db서버가 아예 시작이 안된다면
+service mysql start
+service mysql restart (재시작)
+
+
+================================================================================================================================================
+상품관리 페이지 해결 못함
+
+===================================================================12주차 연습문제==================================================================================
+해결 못함
+
+
+=================================================<13주차>=====================================================
+해결 못함
+
+===================================================================13주차 연습문제==================================================================================
+해결 못함
+
+=================================================<14주차>=====================================================
+해결 못함
+
+===================================================================14주차 연습문제==================================================================================
 해결 못함

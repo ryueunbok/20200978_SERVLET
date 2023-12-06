@@ -1,4 +1,5 @@
 <%@ page contentType="text/html; charset=utf-8"%>
+<%@ page import="java.util.Date"%>
 	    <footer class="container">
 		    <p> <br>&copy; 사이트 대표 : 류은복<br>
                 고유번호 : 20200978<br>
